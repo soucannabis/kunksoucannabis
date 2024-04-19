@@ -4,7 +4,10 @@ import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import SelectProducts from "./inputs/selectProducts";
 import Documents from "./inputs/documents";
+import Anotations from "./inputs/anotations";
 import apiRequest from "../modules/apiRequest";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ModalPopup({ field, userData, updateTable }) {
   delete userData.pass_account;
@@ -14,6 +17,8 @@ function ModalPopup({ field, userData, updateTable }) {
   const [showModal, setShowModal] = useState(false);
   const [userDataUpload, setUserDataUpload] = useState(userData);
   const [datePrescrition, setDatePrescription] = useState(userData.date_prescription);
+  const [anotation, setAnotation] = useState([]);
+  const [anotations, setAnotations] = useState(userData.anotations);
 
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
@@ -27,9 +32,10 @@ function ModalPopup({ field, userData, updateTable }) {
   };
 
   const handleSubmit = async () => {
+    delete userDataUpload.status;
     await apiRequest("/api/directus/update", { userId: userDataUpload.id, formData: userDataUpload }, "POST");
     updateTable(userDataUpload);
-    setShowModal(false);
+    toast.success("Dados salvos com sucesso");
   };
 
   function selectedProducts(value) {
@@ -42,6 +48,44 @@ function ModalPopup({ field, userData, updateTable }) {
       ...prevState,
       ["date_prescription"]: item.target.value,
     }));
+  }
+
+  function anotationsHandleChange(el) {
+    var anotations = JSON.parse(userData.anotations);
+    if (!anotations) {
+      anotations = [];
+    }
+    var anotationData = {
+      id: anotations.length + 1,
+      text: el.target.value,
+      system_user: 1,
+      date_created: "2024-02-08",
+    };
+
+    setAnotation(anotationData);
+  }
+
+  function addAnotation() {
+    var anotations = JSON.parse(userData.anotations);
+    if (!anotations) {
+      anotations = [];
+    }
+    anotations = anotations.concat(anotation);
+    userDataUpload.anotations = anotations;
+    setAnotations(anotations);
+  }
+
+  function deleteAnotation(id) {
+    if(typeof anotations == "string"){
+    var anotationsData = JSON.parse(anotations);
+    }else{
+      var anotationsData = anotations
+    }
+    console.log(id);
+    anotationsData = anotationsData.filter((anotation) => anotation.id != id);
+    console.log(anotationsData);
+    setAnotations(anotationsData)
+    userDataUpload.anotations = anotationsData
   }
 
   return (
@@ -57,7 +101,7 @@ function ModalPopup({ field, userData, updateTable }) {
         <Modal.Body>
           <div className="container">
             <div className="row">
-              <Tabs defaultActiveKey="shopData" id="uncontrolled-tab-example" className="mb-3">
+              <Tabs defaultActiveKey="userData" id="uncontrolled-tab-example" className="mb-3">
                 <Tab eventKey="userData" title="Dados do Associado">
                   <div className="col-md-12">
                     <form id="formUser">
@@ -160,7 +204,14 @@ function ModalPopup({ field, userData, updateTable }) {
                 </Tab>
                 <Tab eventKey="termo" title="Termo do Associado">
                   <div className="col-md-12">
-                    <a href={userDataUpload.contract} target="_blank">Termo do Associado</a>
+                    <a href={userDataUpload.contract} target="_blank">
+                      Termo do Associado
+                    </a>
+                  </div>
+                </Tab>
+                <Tab eventKey="anotações" title="Anotações">
+                  <div className="col-md-12">
+                    <Anotations id="anotations" name="anotations" anotationsHandleChange={anotationsHandleChange} addAnotation={addAnotation} deleteAnotation={deleteAnotation} anotations={anotations} />
                   </div>
                 </Tab>
               </Tabs>
