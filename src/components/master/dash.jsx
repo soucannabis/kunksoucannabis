@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import Navbar from "../navbar";
 import Table from "../table";
-import Coupon from "../inputs/coupon";
+import Coupon from "../inputs/coupons";
 import apiRequest from "../../modules/apiRequest";
+import Partners from "../inputs/partners";
+import Menu from '../../components/menu';
 
 function Dash() {
   const [usersData, setUsersData] = useState([]);
@@ -44,8 +47,7 @@ function Dash() {
       }
 
       usersData.forEach((user) => {
-        
-      user.created = calcularTempoDecorrido(user.date_created);
+        user.created = calcularTempoDecorrido(user.date_created);
 
         switch (user.status) {
           case "formerror":
@@ -80,7 +82,8 @@ function Dash() {
       setUsersData(usersData);
     }
     usersData();
-  }, [usersData]);
+  }, []);
+
 
   const updateTable = (updatedUser) => {
     setUsersData((prevUsers) =>
@@ -95,9 +98,19 @@ function Dash() {
 
   return (
     <div>
-      <div className="container main my-3 p-3 bg-white rounded box-shadow">
-        <Coupon usersData={usersData} />
-        <Table dataTable={usersData} headers={["Nome", "Status", "E-mail", "Criado"]} fields={["fullname", "status", "email_account","created"]} updateTable={updateTable} />
+      <Menu />
+      <div class="nav-scroller bg-white box-shadow">
+        <nav class="nav nav-underline">
+          <a class="nav-link active" href="#">
+          <Coupon usersData={usersData} />
+          </a>
+          <a class="nav-link active" href="#">
+          <Partners />
+          </a>
+        </nav>
+      </div>
+      <div className="container main my-3 p-3 bg-white rounded box-shadow">        
+        <Table dataTable={usersData} headers={["", "Nome", "Status", "E-mail", "Criado"]} fields={["fullname", "status", "email_account", "created"]} updateTable={updateTable} usersData={usersData} />
       </div>
     </div>
   );

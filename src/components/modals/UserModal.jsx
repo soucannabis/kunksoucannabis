@@ -2,26 +2,27 @@ import React, { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
-import SelectProducts from "./inputs/selectProducts";
-import Documents from "./inputs/documents";
-import Anotations from "./inputs/anotations";
-import apiRequest from "../modules/apiRequest";
+import SelectProducts from "../inputs/selectProducts";
+import Documents from "../inputs/documents";
+import Anotations from "../inputs/anotations";
+import apiRequest from "../../modules/apiRequest";
+
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function ModalPopup({ field, userData, updateTable }) {
-  delete userData.pass_account;
-  delete userData.date_created;
-  delete userData.date_updated;
+function UserModal({ field, data, updateTable, handleShowModal, handleCloseModal, showModal }) {
+  delete data.pass_account;
+  delete data.date_created;
+  delete data.date_updated;
 
-  const [showModal, setShowModal] = useState(false);
-  const [userDataUpload, setUserDataUpload] = useState(userData);
-  const [datePrescrition, setDatePrescription] = useState(userData.date_prescription);
+  const [show, setShowModal] = useState(false);
+  const [userDataUpload, setUserDataUpload] = useState(data);
+  const [datePrescrition, setDatePrescription] = useState(data.date_prescription);
   const [anotation, setAnotation] = useState([]);
-  const [anotations, setAnotations] = useState(userData.anotations);
+  const [anotations, setAnotations] = useState(data.anotations);
 
-  const handleClose = () => setShowModal(false);
-  const handleShow = () => setShowModal(true);
+  handleCloseModal = () => setShowModal(false);
+  handleShowModal = () => setShowModal(true);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,7 +52,7 @@ function ModalPopup({ field, userData, updateTable }) {
   }
 
   function anotationsHandleChange(el) {
-    var anotations = JSON.parse(userData.anotations);
+    var anotations = JSON.parse(data.anotations);
     if (!anotations) {
       anotations = [];
     }
@@ -66,7 +67,7 @@ function ModalPopup({ field, userData, updateTable }) {
   }
 
   function addAnotation() {
-    var anotations = JSON.parse(userData.anotations);
+    var anotations = JSON.parse(data.anotations);
     if (!anotations) {
       anotations = [];
     }
@@ -76,25 +77,26 @@ function ModalPopup({ field, userData, updateTable }) {
   }
 
   function deleteAnotation(id) {
-    if(typeof anotations == "string"){
-    var anotationsData = JSON.parse(anotations);
-    }else{
-      var anotationsData = anotations
+    if (typeof anotations == "string") {
+      var anotationsData = JSON.parse(anotations);
+    } else {
+      var anotationsData = anotations;
     }
-    console.log(id);
     anotationsData = anotationsData.filter((anotation) => anotation.id != id);
     console.log(anotationsData);
-    setAnotations(anotationsData)
-    userDataUpload.anotations = anotationsData
+    setAnotations(anotationsData);
+    userDataUpload.anotations = anotationsData;
   }
 
   return (
     <div>
-      <a style={{ cursor: "pointer" }} variant="primary" onClick={handleShow}>
-        {field}
+      <a style={{ cursor: "pointer" }} variant="primary" onClick={handleShowModal}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+        </svg>
       </a>
 
-      <Modal show={showModal} onHide={handleClose}>
+      <Modal show={show} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>{userDataUpload.name_associate + " " + userDataUpload.lastname_associate}</Modal.Title>
         </Modal.Header>
@@ -219,7 +221,7 @@ function ModalPopup({ field, userData, updateTable }) {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleCloseModal}>
             Close
           </Button>
           <Button variant="primary" onClick={handleSubmit}>
@@ -231,4 +233,4 @@ function ModalPopup({ field, userData, updateTable }) {
   );
 }
 
-export default ModalPopup;
+export default UserModal;

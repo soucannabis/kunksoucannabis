@@ -28,7 +28,7 @@ function Coupon({ usersData }) {
       const coupons = await apiRequest("/api/directus/coupons", "", "GET");
       const users = await usersData.filter((item) => item.name_associate !== null);
       const selectOptions = users.map(({ name_associate, lastname_associate, id }) => ({ label: `${name_associate} ${lastname_associate}`, value: id }));
-
+     
       setSelectData(selectOptions);
       setCoupons(coupons);
     }
@@ -205,7 +205,7 @@ function Coupon({ usersData }) {
       </Modal>
 
       <a style={{ cursor: "pointer" }} variant="primary" onClick={handleShow}>
-        Novo Cupom
+        Cupons de Desconto
       </a>
     </div>
   );
