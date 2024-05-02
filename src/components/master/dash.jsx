@@ -77,7 +77,7 @@ function Dash() {
         const lastName = obj.lastname_associate || "";
         const fullname = `${firstName} ${lastName}`.trim();
         return { ...obj, fullname };
-      });
+      })
 
       setUsersData(usersData);
     }

@@ -11,7 +11,7 @@ function App() {
     <Router>
       <div>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/parceiros/login" element={<Login />} />
           <Route path="/acolhimento" element={<Dash />} />
           <Route path="/pedidos" element={<Orders />} />
           <Route path="/parceiros/:code" element={<Partners />} />

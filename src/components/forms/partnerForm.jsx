@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import InputMask from "react-input-mask";
 
-function PartnerForm({ data, hiddenFields }) {
+function PartnerForm({ data, hiddenFields, disabledFields }) {
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
@@ -42,6 +42,15 @@ function PartnerForm({ data, hiddenFields }) {
         const label = document.getElementById("label-" + id);
         el.hidden = true;
         label.hidden = true;
+      });
+    }
+
+    if (disabledFields) {
+      disabledFields.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = true;
+        } 
       });
     }
   }, [data]);
@@ -106,7 +115,7 @@ function PartnerForm({ data, hiddenFields }) {
       <ToastContainer />
       <form onSubmit={createPartner}>
         <div>
-          <label>Pessoa fisica ou juridica?</label>
+          <label id="label-type">Pessoa fisica ou juridica?</label>
           <select className="form-control" id="type" name="type" value={formData.type} onChange={handleChange}>
             <option value={0}>Pessoa Física</option>
             <option value={1}>Pessoa Jurídica</option>
@@ -170,38 +179,36 @@ function PartnerForm({ data, hiddenFields }) {
           <input className="form-control" type="text" id="pass_account" name="pass_account" value={formData.pass_account} onChange={handleChange} />
         </div>
         <div>
-          <label htmlFor="mobile_number">Mobile Number:</label>
+          <label>Mobile Number:</label>
           <InputMask mask="(99) 99999-9999" onChange={handleChange} placeholder="(00) 00000-0000" type="text" class="form-control" id="mobile_number" name="mobile_number" value={formData.mobile_number}></InputMask>
         </div>
         <div>
-          <label htmlFor="mobile_number">Rua</label>
+          <label>Rua</label>
           <input className="form-control" type="text" id="street" name="street" value={formData.street} onChange={handleChange} />
         </div>
         <div>
-          <label htmlFor="mobile_number">Número</label>
+          <label>Número</label>
           <input className="form-control" type="text" id="number_street" name="number_street" value={formData.number_street} onChange={handleChange} />
         </div>
         <div>
-          <label htmlFor="mobile_number">Bairro</label>
+          <label>Bairro</label>
           <input className="form-control" type="text" id="neighborhood" name="neighborhood" value={formData.neighborhood} onChange={handleChange} />
         </div>
         <div>
-          <label htmlFor="mobile_number">Cidade</label>
+          <label>Cidade</label>
           <input className="form-control" type="text" id="city" name="city" value={formData.city} onChange={handleChange} />
         </div>
         <div>
-          <label htmlFor="mobile_number">Estado</label>
+          <label>Estado</label>
           <input className="form-control" type="text" id="state" name="state" value={formData.state} onChange={handleChange} />
         </div>
         <div>
-          <label htmlFor="mobile_number">CEP</label>
+          <label>CEP</label>
           <input className="form-control" type="text" id="cep" name="cep" value={formData.cep} onChange={handleChange} />
         </div>
 
         <div>
-          <label id="label-commission_value" htmlFor="mobile_number">
-            Comissão
-          </label>
+          <label id="label-commission_value">Comissão</label>
           <input className="form-control" type="text" id="commission_value" name="commission_value" value={formData.commission_value} onChange={handleChange} />
         </div>
         <button>Submit</button>

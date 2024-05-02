@@ -17,7 +17,7 @@ function UserModal({ field, data, updateTable, handleShowModal, handleCloseModal
 
   const [show, setShowModal] = useState(false);
   const [userDataUpload, setUserDataUpload] = useState(data);
-  const [datePrescrition, setDatePrescription] = useState(data.date_prescription);
+  const [datePrescrition, setDatePrescription] = useState();
   const [anotation, setAnotation] = useState([]);
   const [anotations, setAnotations] = useState(data.anotations);
 
@@ -186,6 +186,13 @@ function UserModal({ field, data, updateTable, handleShowModal, handleCloseModal
                     <input type="text" className="form-control" id="userid" name="id" value={userDataUpload.id} hidden />
 
                     <div className="form-group">
+                      <div className="col-md-12">
+                        <div className="form-group">
+                          <label>Data da prescrição:</label>
+                          <input type="date" onChange={dataPrescriptionHandle} value={datePrescrition}></input>
+                        </div>
+                        <br></br>
+                      </div>
                       <label htmlFor="nome">Produtos:</label>
                       <SelectProducts selectedProducts={selectedProducts} userProducts={userDataUpload.products} />
                     </div>
@@ -194,14 +201,6 @@ function UserModal({ field, data, updateTable, handleShowModal, handleCloseModal
                 <Tab eventKey="documents" title="Documentos">
                   <div className="col-md-12">
                     <Documents documents={userDataUpload.documents} />
-                  </div>
-                </Tab>
-                <Tab eventKey="receitas" title="Data da Prescrição">
-                  <div className="col-md-12">
-                    <input type="text" className="form-control" id="userid" name="id" value={userDataUpload.id} hidden />
-                    <div className="form-group">
-                      <input type="date" onChange={dataPrescriptionHandle} value={datePrescrition}></input>
-                    </div>
                   </div>
                 </Tab>
                 <Tab eventKey="termo" title="Termo do Associado">
