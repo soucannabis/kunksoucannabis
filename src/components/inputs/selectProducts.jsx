@@ -7,42 +7,51 @@ function SelectProducts({ selectedProducts, userProducts }) {
   }
 
   const [productsData, setProductsData] = useState([]);
+  const [selectedProductsUser, setSelectedProductsUser] = useState([]);
   const [productsUser, setProductsUser] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProductsData, setSelectedProducts] = useState([]);
 
   useEffect(() => {
     async function products() {
       const products = await apiRequest("/api/directus/products", "", "GET");
       setProductsData(products);
+      setSelectedProducts(selectedProducts);
     }
     products();
+
+    if (typeof userProducts == "string") {
+      setProductsUser(JSON.parse(userProducts));
+    } else {
+      setProductsUser(userProducts);
+    }
   }, []);
 
-  if (userProducts != [] && userProducts.length != 0) {
-    var products = userProducts;
+  useEffect(() => {
+    if (productsUser != [] && productsUser.length != 0) {
+      var products = productsUser;
 
-    if (typeof products == "string") {
-      products = JSON.parse(userProducts);
-    }
-
-    products.forEach((product) => {
-      const isProductInList = products.some((item) => item.product === product.product);
-      if (isProductInList) {
-        const checkProduct = document.getElementsByName(product.product);
-        if (checkProduct[0] !== undefined) {
-          checkProduct[0].checked = true;
-          const inputQnt = document.getElementsByName("productValue-" + product.product);
-          const inputSelected = document.getElementById("select-" + product.product);
-          inputSelected.style.display = "inline";
-          inputQnt[0].value = product.qnt;
-        }
+      if (typeof products == "string") {
+        products = JSON.parse(productsUser);
       }
-    });
-  }
+
+      products.forEach((product) => {
+        const isProductInList = products.some((item) => item.product === product.product);
+        if (isProductInList) {
+          const checkProduct = document.getElementsByName(product.product);
+          if (checkProduct[0] !== undefined) {
+            checkProduct[0].checked = true;
+            const inputQnt = document.getElementsByName("productValue-" + product.product);
+            inputQnt[0].value = product.qnt;
+          }
+        }
+      });
+    }
+  }, [selectedProductsData]);
 
   function handleChangeProducts(event) {
     var id = event.target.id;
-    const name = event.target.name;
+    var name = event.target.name;
 
     id = id.split("-");
     id = parseInt(id[1]);
@@ -54,57 +63,47 @@ function SelectProducts({ selectedProducts, userProducts }) {
       qntProduct.value = 1;
     }
 
-    if (!name.includes("productValue")) {
-      if (event.target.checked) {
-        setProductsUser((prevProducts) => [...prevProducts, { product: event.target.name, qnt: qntProduct.value }]);
-      } else {
-        setProductsUser((prevProducts) => prevProducts.filter((i) => i.product !== event.target.name));
+    if (event.target.checked || name.includes("productValue")) {
+      if (name.includes("productValue")) {
+        name = name.split("productValue-");
+        name = name[1];
       }
+
+      setSelectedProductsUser((prevProducts) => {
+        const existingProductIndex = prevProducts.findIndex((item) => item.product === name);
+
+        if (existingProductIndex !== -1) {
+          const updatedProducts = [...prevProducts];
+          updatedProducts[existingProductIndex].qnt = qntProduct.value;
+          return updatedProducts;
+        } else {
+          return [...prevProducts, { product: name, qnt: qntProduct.value }];
+        }
+      });
     } else {
-      productCheck.click();
-      if (event.target.checked) {
-        productCheck.click();
-      } else {
-        productCheck.click();
-      }
+      var products = productsUser.filter((item) => item.product !== name);
+      userProducts = productsUser.filter((item, index, self) => {
+        return index === self.findIndex((t) => t.product === item.product);
+      });
+
+      qntProduct.value = null;
+
+      setProductsUser(products);
     }
   }
 
   if (typeof userProducts == "string") {
     userProducts = JSON.parse(userProducts);
-    var arrayProducts = userProducts.concat(productsUser);
+    var arrayProducts = productsUser.concat(selectedProductsUser);
     selectedProducts(arrayProducts);
   } else {
-    var arrayProducts = userProducts.concat(productsUser);
+    var arrayProducts = productsUser.concat(selectedProductsUser);
     selectedProducts(arrayProducts);
   }
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
-
-  function unselectProduct(event) {
-    var id = event.target.id;
-
-    id = id.split("-");
-
-    if (id.length < 3) {
-      id = id[1];
-    } else {
-      id = id.slice(1).join("-");
-    }
-
-    const select = document.getElementsByName(id);
-    select[0].checked = false;
-
-    userProducts = userProducts.filter((item) => item.product !== id);
-    userProducts = userProducts.filter((item, index, self) => {
-      return index === self.findIndex((t) => t.product === item.product);
-    });
-
-    var arrayProducts = userProducts.concat(productsUser);
-    selectedProducts(arrayProducts);
-  }
 
   const filteredProducts = productsData.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.cod.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -124,9 +123,6 @@ function SelectProducts({ selectedProducts, userProducts }) {
               <td>
                 {filteredProducts.map((item, index) => (
                   <tr>
-                    <span className="deleteSelected" onClick={unselectProduct} id={"select-" + item.cod} style={{ color: "red", fontSize: "15px", fontWight: "bold", marginRight: "10px", cursor: "pointer" }}>
-                      X
-                    </span>
                     <input type="checkbox" value={item.cod} name={item.cod} id={"itemCheck-" + index} onClick={handleChangeProducts} /> {item.cod} - {item.name}
                     <input style={{ float: "right" }} type="number" name={"productValue-" + item.cod} onChange={handleChangeProducts} id={"productValue-" + index} min={1} max={10} />
                   </tr>

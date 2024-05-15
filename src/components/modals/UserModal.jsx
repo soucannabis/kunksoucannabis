@@ -40,6 +40,7 @@ function UserModal({ field, data, updateTable, handleShowModal, handleCloseModal
   };
 
   function selectedProducts(value) {
+    console.log(value);
     userDataUpload.products = value;
   }
 
@@ -189,7 +190,7 @@ function UserModal({ field, data, updateTable, handleShowModal, handleCloseModal
                       <div className="col-md-12">
                         <div className="form-group">
                           <label>Data da prescrição:</label>
-                          <input type="date" onChange={dataPrescriptionHandle} value={datePrescrition}></input>
+                          <input type="date" onChange={dataPrescriptionHandle} value={datePrescrition || userDataUpload.date_prescription}></input>
                         </div>
                         <br></br>
                       </div>

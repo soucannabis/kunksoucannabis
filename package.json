@@ -21,6 +21,7 @@
     "react-router-dom": "^6.23.0",
     "react-select": "^5.8.0",
     "react-toastify": "^10.0.5",
+    "react-viewer": "^3.2.2",
     "tesseract.js": "^5.0.5"
   },
   "devDependencies": {
