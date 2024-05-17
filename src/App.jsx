@@ -5,6 +5,7 @@ import Orders from "./components/master/orders";
 import Partners from "./components/master/partners";
 import Login from "./components/master/login";
 import CreatePartner from './components/forms/partnerForm'
+import Reception from './components/master/reception'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/parceiros/login" element={<Login />} />
           <Route path="/acolhimento" element={<Dash />} />
           <Route path="/pedidos" element={<Orders />} />
+          <Route path="/triagem" element={<Reception />} />
           <Route path="/parceiros/:code" element={<Partners />} />
           <Route path="/parceiros/cadastro" element={<CreatePartner />} />
         </Routes>

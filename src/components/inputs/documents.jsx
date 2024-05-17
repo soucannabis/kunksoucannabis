@@ -8,38 +8,34 @@ function Documents({ documents }) {
 
   useEffect(() => {
     async function getDocuments() {
-      documents = documents.join(",").toString();
-      const data = await apiRequest("/api/directus/documents", { documents: documents }, "POST");
-      setUserDocuments(data);
+      console.log(documents)
+      const docsData = documents.join(",").toString();
+      const data = await apiRequest("/api/directus/documents", { documents: docsData }, "POST");
+      setUserDocuments(data); 
 
-      var imagesSrc = []
+      const imagesSrc = data.map(doc => {
+        const docType = doc.docType.split("/")[1];
+        return {
+          src: `https://database.soucannabis.ong.br/assets/${doc.docSlug}/${doc.docName}.${docType}`,
+        };
+      });
 
-      data.map(doc => {
-        var docType = doc.docType
-        docType = docType.split("/")[1]
-        imagesSrc.push({
-          src:"https://database.soucannabis.ong.br/assets/"+doc.docSlug+"/"+doc.docName+"."+docType
-        })
-      })
-      setImages([imagesSrc])
+      setImages(imagesSrc);
     }
 
-
-
     getDocuments();
-  }, []);
+  }, [documents]);
 
   return (
     <div className="container">
-      {console.log(images)}
       <div id="imageContainer"></div>
       <Viewer
-        visible={true}
+        visible={images.length > 0}
         container={document.getElementById("imageContainer")}
-        images={[{ src: "https://database.soucannabis.ong.br/assets/84ab2ac4-af2d-4c03-acc9-9384de547ac0.jpeg" }]} // Substitua o src e alt conforme necessário
+        images={images}
         noClose={true}
-        noToolbar={true}   
-        defaultScale={5}
+        noToolbar={false}
+        defaultScale={1}
         zoomSpeed={1}
       />
     </div>
