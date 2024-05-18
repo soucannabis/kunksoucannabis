@@ -53,11 +53,18 @@
   padding: 0;
 }
 
-.form-control {
+.input-control  {
   border: 0;
   border-bottom: 2px solid #ccc;
   font-size:16px; 
-  border-radius:0
+  border-radius:0;
+  width:100%;
+  padding-left:10px
+}
+
+.input-control:focus{
+  border: 0;
+  border-bottom: 2px solid #0d50219d !important;
 }
 
 label {
@@ -85,6 +92,10 @@ label {
   padding: 0 !important;
 }
 
+.MuiFormControl-root.MuiTextField-root.css-1u3bzj6-MuiFormControl-root-MuiTextField-root {
+  width: 100%;
+  margin-top:10px
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

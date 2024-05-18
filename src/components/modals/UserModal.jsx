@@ -7,6 +7,7 @@ import Documents from "../modals/documents";
 import Anotations from "../inputs/anotations";
 import apiRequest from "../../modules/apiRequest";
 import ciap2 from "../../modules/ciap2";
+import Form from "../forms/form"
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -108,141 +109,7 @@ function UserModal({ field, data, updateTable, handleShowModal, handleCloseModal
               <Tabs defaultActiveKey="userData" id="uncontrolled-tab-example" className="mb-3">
                 <Tab eventKey="userData" title="Dados do Associado">
                   <div class="container">
-                    <form id="formUser" className="block">                    
-                      <div class="row">
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="nome">Nome:</label>
-                            <input type="text" className="form-control" id="nome" name="name_associate" value={userDataUpload.name_associate} onChange={handleChange} />
-                          </div>
-                        </div>
-
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="sobrenome">Sobrenome:</label>
-                            <input type="text" className="form-control" id="sobrenome" name="lastname_associate" value={userDataUpload.lastname_associate} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="cpf">CPF:</label>
-                            <input type="text" className="form-control" id="cpf" name="cpf_associate" value={userDataUpload.cpf_associate} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2">
-                          {" "}
-                          <div className="form-group">
-                            <label htmlFor="rg">RG:</label>
-                            <input type="text" className="form-control" id="rg" name="rg_associate" value={userDataUpload.rg_associate} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="emiiter_rg_associate">Emissor</label>
-                            <input type="text" className="form-control" id="emiiter_rg_associate" name="emiiter_rg_associate" value={userDataUpload.emiiter_rg_associate} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="sexo">Sexo:</label>
-                            <input type="text" className="form-control" id="sexo" name="gender" value={userDataUpload.gender} onChange={handleChange} />
-                          </div>
-                        </div>
-                      </div>
-
-                      <br></br>
-                      <div class="row">
-                        <div class="col-md-2">
-                          <input type="text" className="form-control" id="userid" name="id" value={userDataUpload.id} hidden />
-                          <div className="form-group">
-                            <label htmlFor="nacionalidade">Nacionalidade:</label>
-                            <input type="text" className="form-control" id="nacionalidade" name="nationality" value={userDataUpload.nationality} onChange={handleChange} />
-                          </div>
-                        </div>
-
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="estado_civil">Estado Civil:</label>
-                            <input type="text" className="form-control" id="estado_civil" name="marital_status" value={userDataUpload.marital_status} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <div className="form-group">
-                            <label htmlFor="telefone">Telefone:</label>
-                            <input type="tel" className="form-control" id="telefone" name="mobile_number" value={userDataUpload.mobile_number} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <div className="form-group">
-                            <label htmlFor="email">Email:</label>
-                            <input type="email" className="form-control" id="email" name="email_account" value={userDataUpload.email_account} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2"></div>
-                      </div>
-                      <br></br>
-                      <div class="row">
-                        <div class="col-md-4">
-                          <div className="form-group">
-                            <label htmlFor="rua">Rua:</label>
-                            <input type="text" className="form-control" id="rua" name="street" value={userDataUpload.street} onChange={handleChange} />
-                          </div>
-                        </div>
-
-                        <div class="col-md-1">
-                          <div className="form-group">
-                            <label htmlFor="numero">Número:</label>
-                            <input type="text" className="form-control" id="numero" name="number" value={userDataUpload.number} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="bairro">Bairro:</label>
-                            <input type="text" className="form-control" id="bairro" name="neighborhood" value={userDataUpload.neighborhood} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="cidade">Cidade:</label>
-                            <input type="text" className="form-control" id="cidade" name="city" value={userDataUpload.city} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-1">
-                          <div className="form-group">
-                            <label htmlFor="estado">Estado:</label>
-                            <input type="text" className="form-control" id="estado" name="state" value={userDataUpload.state} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-2">
-                          <div className="form-group">
-                            <label htmlFor="cep">CEP:</label>
-                            <input type="text" className="form-control" id="cep" name="cep" value={userDataUpload.cep} onChange={handleChange} />
-                          </div>
-                        </div>
-                      </div>
-                      <br></br>
-                      <br></br>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div className="form-group">
-                            <label htmlFor="razao_tratamento">Razão de Tratamento Texto:</label>
-                            <textarea rows="4" type="text" className="form-control" id="razao_tratamento" name="reason_treatment_text" value={userDataUpload.reason_treatment_text} onChange={handleChange} />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div className="form-group">
-                            <label htmlFor="razao_tratamento">Razão de Tratamento CIAP2:</label>
-                            <ul>
-                              {ciap2Data.map((option) => (
-                                <li key={option} value={option}>
-                                  {option}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </form>
+                   <Form formData={data}/>
                     <div class="row">
                       <div class="col-md-12">
                         <div class="col">

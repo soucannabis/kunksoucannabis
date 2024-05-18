@@ -2642,18 +2642,21 @@ function ciap2(data) {
     },
   ];
 
-  let labels = [];
-
-  const dataCiap = JSON.parse(data);
-
-  if (dataCiap) {
-    options.forEach((option) => {
-      const filteredSubcategories = option.subcategories.filter((subcategory) => dataCiap.includes(subcategory.value));
-      labels = labels.concat(filteredSubcategories.map((subcategory) => subcategory.label));
-    });
+  let dataCiap = [];
+  if (data) {
+    dataCiap = JSON.parse(data);
   }
 
-  return labels;
+  const filteredOptions = options.map((option) => ({
+    subcategories: option.subcategories
+      .filter((subcategory) => dataCiap.includes(subcategory.value))
+      .map((filteredSubcategory) => ({
+        ...filteredSubcategory,
+        category: option.category,
+      })),
+  }));
+
+  return filteredOptions.flatMap((option) => option.subcategories);
 }
 
 export default ciap2;
