@@ -3,10 +3,10 @@ import apiRequest from "../../modules/apiRequest";
 import { Modal, Button } from "react-bootstrap";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
-import CratePartner from "../forms/partnerForm";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import InputMask from "react-input-mask";
+import Form from "../forms/form";
 
 function Partners() {
   const [showModalPartners, setShowModalPartners] = useState(false);
@@ -41,11 +41,29 @@ function Partners() {
 
   const [partner, setPartner] = useState(partnerData);
   const [formData, setFormData] = useState(partnerData);
+  const [formFields, setFormFields] = useState([]);
 
   useEffect(() => {
     async function getPartners() {
       const partners = await apiRequest("/api/directus/partners", "", "GET");
       setPartners(partners);
+      setFormFields([      
+        { name: "Nome", id: "first_name", type: "text", options: null, size: 2 },
+        { name: "Sobrenome", id: "last_name", type: "text", options: null, size: 2 },      
+        { name: "Documento CPF ou CNPJ", id: "rg", type: "text", options: null, size: 2 },
+        { name: "Data de Nascimento", id: "birthday", type: "data", options: null, size: 2 },
+        { name: "Gênero", id: "gender", type: "text", options: null, size: 2 },
+        { name: "Nacionalidade", id: "nationality", type: "text", options: null, size: 2 },
+        { name: "Email", id: "email", type: "email", options: null, size: 2 },
+        { name: "Telefone", id: "mobile_number", type: "phone", options: null, size: 2 },
+        { name: "Rua", id: "street", type: "text", options: null, size: 2 },
+        { name: "Número", id: "number_street", type: "text", options: null, size: 2 },
+        { name: "Bairro", id: "neighborhood", type: "text", options: null, size: 2 },
+        { name: "Cidade", id: "city", type: "text", options: null, size: 2 },
+        { name: "Estado", id: "state", type: "selectStates", options: {placeholder:"Selecione o estado"}, size: 2 },
+        { name: "CEP", id: "cep", type: "cep", options: null, size: 2 },
+        { name: "Comissão %", id: "commission_value", type: "number", options: null, size: 2 }       
+      ]);
     }
 
     getPartners();
@@ -77,7 +95,9 @@ function Partners() {
     }));
   };
 
-  
+  function returnDataForm(data) {
+    setFormData(data);
+  }
 
   async function deletePartner(el) {
     if (confirm(`Tem certeza que deseja excluir o parceiro?`)) {
@@ -255,7 +275,7 @@ function Partners() {
             </Tab>
             <Tab eventKey="newPartner" title="Criar Parceiro">
               <div className="container">
-                <CratePartner partner={partner} formData={formData} handleChange={handleChange}/>
+                <Form formFields={formFields} returnDataForm={returnDataForm} half />
               </div>
             </Tab>
           </Tabs>

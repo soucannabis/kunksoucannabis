@@ -8,6 +8,7 @@ import Menu from '../../components/menu';
 
 function Dash() {
   const [usersData, setUsersData] = useState([]);
+  const [patientsData, setpatientsData] = useState([]);
 
   useEffect(() => {
     async function usersData() {
@@ -69,9 +70,9 @@ function Dash() {
             break;
         }
       });
-
+      setpatientsData(usersData.filter((obj) => obj.status === "patient"));
       usersData = usersData.filter((obj) => obj.status !== "patient");
-
+   
       usersData = usersData.map((obj) => {
         const firstName = obj.name_associate || "";
         const lastName = obj.lastname_associate || "";
@@ -82,7 +83,7 @@ function Dash() {
       setUsersData(usersData);
     }
     usersData();
-  }, []);
+  }, [usersData]);
 
 
   const updateTable = (updatedUser) => {
@@ -95,7 +96,7 @@ function Dash() {
       })
     );
   };
-
+  
   return (
     <div>
       <Menu />
@@ -110,7 +111,7 @@ function Dash() {
         </nav>
       </div>
       <div className="container main my-3 p-3 bg-white rounded box-shadow">        
-        <Table dataTable={usersData} headers={["", "Nome", "Status", "E-mail", "Criado"]} fields={["fullname", "status", "email_account", "created"]} updateTable={updateTable} usersData={usersData} />
+        <Table data={[{usersData:usersData, patientsData:patientsData}]} headers={["", "Nome", "Status", "E-mail", "Criado"]} fields={["fullname", "status", "email_account", "created"]} updateTable={updateTable} usersData={usersData} />
       </div>
     </div>
   );

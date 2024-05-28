@@ -96,6 +96,10 @@ label {
   width: 100%;
   margin-top:10px
 }
+
+.MuiFormControl-root.MuiTextField-root.css-z3c6am-MuiFormControl-root-MuiTextField-root {
+  width: 100%;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
