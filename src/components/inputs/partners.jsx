@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import apiRequest from "../../modules/apiRequest";
-import { Modal, Button } from "react-bootstrap";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
+import { Box, Button, Typography, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Modal, Tab, Tabs } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import InputMask from "react-input-mask";
 import Form from "../forms/form";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import ModalClose from "@mui/joy/ModalClose";
+import ModalDialog from "@mui/joy/ModalDialog";
+import DialogTitle from "@mui/joy/DialogTitle";
+import DialogContent from "@mui/joy/DialogContent";
 
 function Partners() {
-  const [showModalPartners, setShowModalPartners] = useState(false);
   const [showModalEditPartners, setShowModalEditPartners] = useState(false);
-  const [coupons, setCoupons] = useState([]);
   const [partners, setPartners] = useState([]);
   const [partnerType, setPartnerType] = useState(false);
+  const [saveButton, setSaveButton] = useState(true);
 
   const partnerData = {
     first_name: null,
@@ -47,11 +49,11 @@ function Partners() {
     async function getPartners() {
       const partners = await apiRequest("/api/directus/partners", "", "GET");
       setPartners(partners);
-      setFormFields([      
+      setFormFields([
         { name: "Nome", id: "first_name", type: "text", options: null, size: 2 },
-        { name: "Sobrenome", id: "last_name", type: "text", options: null, size: 2 },      
-        { name: "Documento CPF ou CNPJ", id: "rg", type: "text", options: null, size: 2 },
-        { name: "Data de Nascimento", id: "birthday", type: "data", options: null, size: 2 },
+        { name: "Sobrenome", id: "last_name", type: "text", options: null, size: 2 },
+        { name: "Documento CPF ou CNPJ", id: "id_doc", type: "text", options: null, size: 2 },
+        { name: "Data de Nascimento", id: "birthday", type: "date", options: null, size: 2 },
         { name: "Gênero", id: "gender", type: "text", options: null, size: 2 },
         { name: "Nacionalidade", id: "nationality", type: "text", options: null, size: 2 },
         { name: "Email", id: "email", type: "email", options: null, size: 2 },
@@ -60,17 +62,13 @@ function Partners() {
         { name: "Número", id: "number_street", type: "text", options: null, size: 2 },
         { name: "Bairro", id: "neighborhood", type: "text", options: null, size: 2 },
         { name: "Cidade", id: "city", type: "text", options: null, size: 2 },
-        { name: "Estado", id: "state", type: "selectStates", options: {placeholder:"Selecione o estado"}, size: 2 },
+        { name: "Estado", id: "state", type: "selectStates", options: { placeholder: "Selecione o estado" }, size: 2 },
         { name: "CEP", id: "cep", type: "cep", options: null, size: 2 },
-        { name: "Comissão %", id: "commission_value", type: "number", options: null, size: 2 }       
       ]);
     }
 
     getPartners();
   }, []);
-
-  const handleClosePartners = () => setShowModalPartners(false);
-  const handleShowPartners = () => setShowModalPartners(true);
 
   const handleCloseEditPartners = () => setShowModalEditPartners(false);
 
@@ -78,12 +76,12 @@ function Partners() {
     const { name, value, type } = event.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === "date" ? new Date(value) : value, // Handle date input
+      [name]: type === "date" ? new Date(value) : value,
     }));
   };
 
   const handleChangePartnerEdit = (event) => {
-    if (event.target.id == "partner_type" && event.target.value == 1) {
+    if (event.target.id === "partner_type" && event.target.value === 1) {
       setPartnerType(true);
     } else {
       setPartnerType(false);
@@ -91,16 +89,33 @@ function Partners() {
     const { name, value, type } = event.target;
     setPartner((prevData) => ({
       ...prevData,
-      [name]: type === "date" ? new Date(value) : value, // Handle date input
     }));
   };
 
   function returnDataForm(data) {
-    setFormData(data);
+    if (data && !data.setButton) {
+      setFormData(data);
+    }
+
+    if (data.setButton) {
+      setSaveButton(false);
+    } else {
+      setSaveButton(true);
+    }
+  }
+
+  async function createPartner(e) {
+    setPartners([...partners, formData]);
+    const partner = await apiRequest("/api/directus/partner", formData, "POST");
+    if (partner) {
+      toast.success("Novo parceiro criado");
+    } else {
+      toast.error("Já existe um parceiro com esses dados");
+    }
   }
 
   async function deletePartner(el) {
-    if (confirm(`Tem certeza que deseja excluir o parceiro?`)) {
+    if (window.confirm(`Tem certeza que deseja excluir o parceiro?`)) {
       await apiRequest("/api/directus/partner", { partnerId: el.target.id }, "DELETE");
       const id = parseInt(el.target.id);
       const deleteItem = partners.filter((item) => item.id !== id);
@@ -109,7 +124,7 @@ function Partners() {
   }
 
   async function editPartner(e) {
-    const partner = partners.filter((partiner) => partiner.id == e.target.id);
+    const partner = partners.filter((partiner) => partiner.id === parseInt(e.currentTarget.id));
     setPartner(partner[0]);
     setShowModalEditPartners(true);
   }
@@ -117,179 +132,82 @@ function Partners() {
   const updatePartner = async (event) => {
     event.preventDefault();
     await apiRequest("/api/directus/partner", { partnerId: partner.id, data: partner }, "PATCH");
+    setShowModalEditPartners(false);
+  };
 
+  function updateTable(data) {
     const partnersUpdateData = partners.map((item) => {
-      if (item.id === partner.id) {
-        return partner;
+      if (data.id === item.id) {
+        return data;
       } else {
         return item;
       }
     });
-
     setPartners(partnersUpdateData);
-    setShowModalEditPartners(false);
-  };
+  }
 
   return (
     <div className="container">
       <ToastContainer />
-      <Modal show={showModalEditPartners} onHide={handleCloseEditPartners}>
-        <Modal.Header closeButton>
-          <Modal.Title>{partner.first_name}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="conteiner">
-            <form onSubmit={updatePartner}>
-              {partner.type == "1" && (
-                <div>
-                  <label htmlFor="first_name">Nome da Empresa:</label>
-                  <input className="form-control" type="text" id="first_name" name="first_name" value={partner.first_name} onChange={handleChangePartnerEdit} />
-
-                  <label htmlFor="first_name">CNPJ:</label>
-                  <input className="form-control" type="text" id="cnpj" name="cnpj" value={partner.cpf} onChange={handleChangePartnerEdit} />
-                </div>
-              )}
-
-              <div>
-                {!partner.type == "0" ? <label htmlFor="first_name">Nome:</label> : <label htmlFor="first_name">Nome do responsável:</label>}
-                <input className="form-control" type="text" id="first_name" name="first_name" value={partner.first_name} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                {!partner.type == "0" ? <label htmlFor="last_name">Sobrenome:</label> : <label htmlFor="last_name">Sobrenome do responsável:</label>}
-
-                <input className="form-control" type="text" id="last_name" name="last_name" value={partner.last_name} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="first_name">CPF:</label>
-                <InputMask mask="999.999.999-99" onChange={handleChangePartnerEdit} placeholder="000.000.000-00" typee="text" class="form-control" id="cpf" name="cpf" value={partner.cpf}></InputMask>
-              </div>
-              <div>
-                <label htmlFor="first_name">RG:</label>
-                <input className="form-control" type="text" id="rg" name="rg" value={partner.rg} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="birthday">Data de Nascimento:</label>
-                <input className="form-control" type="text" id="birthday" name="birthday" value={partner.birthday} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="gender">Gênero:</label>
-                <input className="form-control" type="text" id="gender" name="gender" value={partner.gender} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="nationality">Nationality:</label>
-                <input className="form-control" type="text" id="nationality" name="nationality" value={partner.nationality} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="email">Email:</label>
-                <input className="form-control" type="email" id="email" name="email" value={partner.email} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="mobile_number">Mobile Number:</label>
-                <InputMask mask="(99) 99999-9999" onChange={handleChangePartnerEdit} placeholder="000.000.000-00" type="text" class="form-control" id="mobile_number" name="mobile_number" value={partner.mobile_number}></InputMask>
-              </div>
-              <div>
-                <label htmlFor="mobile_number">Rua</label>
-                <input className="form-control" type="text" id="street" name="street" value={partner.street} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="mobile_number">Número</label>
-                <input className="form-control" type="text" id="number_street" name="number_street" value={partner.number_street} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="mobile_number">Bairro</label>
-                <input className="form-control" type="text" id="neighborhood" name="neighborhood" value={partner.neighborhood} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="mobile_number">Cidade</label>
-                <input className="form-control" type="text" id="city" name="city" value={partner.city} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="mobile_number">Estado</label>
-                <input className="form-control" type="text" id="state" name="state" value={partner.state} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="mobile_number">CEP</label>
-                <input className="form-control" type="text" id="cep" name="cep" value={partner.cep} onChange={handleChangePartnerEdit} />
-              </div>
-              <div>
-                <label htmlFor="mobile_number">Comissão</label>
-                <input className="form-control" type="text" id="commission_value" name="commission_value" value={partner.commission_value} onChange={handleChangePartnerEdit} />
-              </div>
-
-              <button>Submit</button>
-            </form>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseEditPartners}>
-            Close
-          </Button>
-        </Modal.Footer>
+      <Modal open={showModalEditPartners} onClose={handleCloseEditPartners}>
+        <ModalDialog layout="center">
+          <ModalClose onClick={handleCloseEditPartners} />
+          <DialogTitle> {partner.first_name}</DialogTitle>
+          <DialogContent>
+            <Box sx={{ padding: 4, backgroundColor: "white", margin: "auto", marginTop: "10%", maxWidth: "90%", borderRadius: 2 }}>
+              <Form formFields={formFields} formData={partner} updateTable={updateTable} returnDataForm={returnDataForm} half partnerEditForm autoupload />
+            </Box>
+          </DialogContent>
+        </ModalDialog>
       </Modal>
 
-      <Modal show={showModalPartners} onHide={handleClosePartners}>
-        <Modal.Header closeButton>
-          <Modal.Title></Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Tabs defaultActiveKey="partners" className="mb-3">
-            <Tab eventKey="partners" title="Parceiros">
-              <div className="col-md-12">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th scope="col"></th>
-                      <th scope="col">Nome</th>
-                      <th scope="col">E-mail</th>
-                      <th scope="col">Comissão</th>
-                      <th scope="col">Comissão Total</th>
-                      <th scope="col">Editar</th>
-                      <th scope="col">Excluir</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {partners.map((item, index) => (
-                      <tr key={index}>
-                        <td></td>
-                        <td>{item.first_name + " " + item.last_name}</td>
-                        <td>{item.email}</td>
-                        <td>{item.commission_value} %</td>
-                        <td>R$ {item.commission_total}</td>
-                        <td>
-                          <a style={{ cursor: "pointer", color: "green" }} id={item.id} onClick={editPartner}>
-                            <svg id={item.id} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
-                              <path id={item.id} d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z" />
-                            </svg>
-                          </a>
-                        </td>
-                        <td>
-                          <a style={{ cursor: "pointer", color: "red" }} id={item.id} onClick={deletePartner}>
-                            X
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Tab>
-            <Tab eventKey="newPartner" title="Criar Parceiro">
-              <div className="container">
-                <Form formFields={formFields} returnDataForm={returnDataForm} half />
-              </div>
-            </Tab>
-          </Tabs>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClosePartners}>
-            Close
+      <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+        <Box sx={{ flex: 2, marginRight: 2 }}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Nome</TableCell>
+                  <TableCell>E-mail</TableCell>
+                  <TableCell>Comissão</TableCell>
+                  <TableCell>Comissão Total</TableCell>
+                  <TableCell>Editar</TableCell>
+                  <TableCell>Excluir</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {partners.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.first_name + " " + item.last_name}</TableCell>
+                    <TableCell>{item.email}</TableCell>
+                    <TableCell>{item.commission_value} %</TableCell>
+                    <TableCell>R$ {item.commission_total}</TableCell>
+                    <TableCell>
+                      <IconButton id={item.id} onClick={editPartner}>
+                        <EditIcon color="primary" />
+                      </IconButton>
+                    </TableCell>
+                    <TableCell>
+                      <IconButton id={item.id} onClick={deletePartner}>
+                        <DeleteIcon color="error" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h6" gutterBottom>
+            Criar Parceiro
+          </Typography>
+          <Form formFields={formFields} returnDataForm={returnDataForm} half />
+          <Button onClick={createPartner} variant="contained" color="primary" disabled={saveButton}>
+            Save Changes
           </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <a style={{ cursor: "pointer" }} variant="primary" onClick={handleShowPartners} handleChangePartnerEdit={handleChangePartnerEdit}>
-        Parceiros
-      </a>
+        </Box>
+      </Box>
     </div>
   );
 }

@@ -4,33 +4,56 @@ import TextField from "@mui/material/TextField";
 import SelectFind from "react-select";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
+import Textarea from "@mui/joy/Textarea";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import Tooltip from "@mui/material/Tooltip";
 import apiRequest from "../../modules/apiRequest";
-import axios from 'axios';
+import axios from "axios";
 
-function Form({ formData, returnDataForm, formFields, full, half, threecol, fourcol, updateTable, nodata, autoupload }) {
-  if (!formData) {
-    formData = [];
-  }
-  const [formValue, setFormValue] = useState(formData);
+function Form({ formData, returnDataForm, formFields, full, half, threecol, fourcol, updateTable, partnerEditForm, autoupload, pageform}) {
+  const [formValue, setFormValue] = useState(formData || []);
   const [states, setStates] = useState([]);
+  const [errorStates, setErrorStates] = useState({});
+
+  useEffect(() => {
+    if (!autoupload && !pageform) {
+      const fields = formFields
+        .map((field) => {
+          return field.id;
+        })
+        .reduce((acc, key) => {
+          acc[key] = null;
+          return acc;
+        }, {});
+      setFormValue(fields);
+    }
+  }, []);
 
   useEffect(() => {
     returnDataForm(formValue);
 
-    async function state () {
-      const response = await axios.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
-      const formattedStates = response.data.map(state => ({
+    async function state() {
+      const response = await axios.get("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
+      const formattedStates = response.data.map((state) => ({
         label: state.nome,
         value: state.sigla,
       }));
       await formattedStates.sort((a, b) => a.label.localeCompare(b.label));
-      setStates(await formattedStates)
+      setStates(await formattedStates);
     }
 
-    state()
+    state();
+
+    if (!autoupload) {
+      const hasNullProperty = Object.values(formValue).some((value) => value === null || value === ""); //|| value.includes("_")
+      if (!hasNullProperty) {
+        returnDataForm({ setButton: true });
+      }
+    }
   }, [formValue]);
 
   const handleChange = (e) => {
@@ -45,24 +68,72 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
         ...prevState,
         [e.target.name]: e.target.value,
       }));
+
+      const value = e.target.value;
+
+      if (e.target.id == "email") {
+        if (!isValidEmail(value)) {
+          setErrorStates((prevState) => ({
+            ...prevState,
+            [e.target.id]: true,
+          }));
+        } else {
+          setErrorStates((prevState) => ({
+            ...prevState,
+            [e.target.id]: false,
+          }));
+        }
+      }
+
+      if (e.target.dataset && e.target.dataset.mask) {
+        if (value.includes("_")) {
+          setErrorStates((prevState) => ({
+            ...prevState,
+            [e.target.id]: true,
+          }));
+        } else {
+          setErrorStates((prevState) => ({
+            ...prevState,
+            [e.target.id]: false,
+          }));
+        }
+      }
     }
+  };
+
+  function getNullProperties(obj) {
+    if (typeof obj !== "object" || obj === null) {
+      throw new TypeError("O argumento fornecido não é um objeto");
+    }
+
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+      if (value === null) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+  }
+
+  const isValidEmail = (email) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
   };
 
   const saveForm = async (e) => {
     if (autoupload) {
       delete formValue.status;
-      await apiRequest("/api/directus/update", { userId: formValue.id, formData: formValue }, "POST");
+
+      if (partnerEditForm) {
+        await apiRequest("/api/directus/partner", { partnerId: formValue.id, formData: formValue }, "PATCH");
+      } else {
+        await apiRequest("/api/directus/update", { userId: formValue.id, formData: formValue }, "POST");
+      }
 
       if (formData.status != "patient") {
         updateTable(formValue);
         returnDataForm(formValue);
       }
     }
-  };
-
-  const isValidEmail = (email) => {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailPattern.test(email);
   };
 
   function renderFormField(field, formValue, handleChange) {
@@ -86,9 +157,9 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
     switch (field.type) {
       case "textarea":
         return (
-          <div style={{ marginTop: "40px" }} className={`col-md-6`} key={field.id}>
+          <div style={{ marginTop: "40px" }} className={`col-md-${size}`} key={field.id}>
             <label htmlFor={field.id}>{field.name}:</label>
-            <textarea className="form-control" id={field.id} name={field.id} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} />
+            <Textarea size="lg" id={field.id} name={field.id} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} required />
           </div>
         );
       case "ul":
@@ -112,13 +183,30 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
       case "selectUser":
         return (
           <div style={{ marginTop: "5px" }} className={`col-md-${size}`} key={field.id}>
-            <SelectFind id={field.id} name={field.id} options={field.options} placeholder="Selecione um associado" onChange={handleChange} isSearchable />
+            <SelectFind id={field.id} name={field.id} options={field.options} placeholder="Selecione um associado" onChange={handleChange} isSearchable required />
           </div>
         );
       case "number":
         return (
           <div style={{ marginTop: "5px" }} className={`col-md-${size}`} key={field.id}>
-           <TextField label={field.name} id={field.id} type="number" onChange={handleChange} variant="outlined" value="15" />
+            <TextField label={field.name} id={field.id} type="number" onChange={handleChange} variant="outlined" value="15" required />
+          </div>
+        );
+      case "radio":
+        return (
+          <div style={{ marginTop: "5px" }} className={`col-md-${size}`} key={field.id}>
+            <FormControl>
+              {field.name}
+              <RadioGroup aria-labelledby="demo-radio-buttons-group-label" name={field.id} onChange={handleChange} variant="outlined" required>
+                {field.options.map((item, i) => {
+                  return (
+                    <div>
+                      <FormControlLabel key={i} value={item} control={<Radio />} label={item} />
+                    </div>
+                  );
+                })}
+              </RadioGroup>
+            </FormControl>
           </div>
         );
       case "select":
@@ -139,23 +227,23 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
           </div>
         );
 
-        case "selectStates":
-          return (
-            <div style={{ marginTop: "5px" }}>
-              <FormControl fullWidth>
-                <InputLabel id={field.id}>{field.options.placeholder}</InputLabel>
-                <Select id={field.id} name={field.id} className={`col-md-${size}`} label={field.options.placeholder} onChange={handleChange}>
-                  {states.map((field, i) => {
-                    return (
-                      <MenuItem key={i} value={field.value}>
-                        {field.label}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </div>
-          );
+      case "selectStates":
+        return (
+          <div style={{ marginTop: "5px" }}>
+            <FormControl fullWidth>
+              <InputLabel id={field.id}>{field.options.placeholder}</InputLabel>
+              <Select id={field.id} name={field.id} className={`col-md-${size}`} label={field.options.placeholder} onChange={handleChange} required>
+                {states.map((field, i) => {
+                  return (
+                    <MenuItem key={i} value={field.value}>
+                      {field.label}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </div>
+        );
 
       case "selectCond":
         return (
@@ -175,7 +263,7 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
             {field.fields
               .filter((item) => item.id === formValue.type)
               .map((field) => {
-                return <TextField label={field.name} id={field.id} name={field.elementName} onChange={handleChange} variant="outlined" />;
+                return <TextField label={field.name} id={field.id} name={field.elementName} onChange={handleChange} variant="outlined" required />;
               })}
           </div>
         );
@@ -183,65 +271,124 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
       case "conditional":
         return (
           <div className={`col-md-${size}`} key={field.id}>
-            <TextField error={false} label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="outlined" hidden={field.options.hidden} />
+            <TextField label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="outlined" hidden={field.options.hidden} required />
           </div>
         );
       case "cpf":
-        if (formValue.length > 0) {
-          var hasInvalidChars = formValue[field.id].includes("_");
-        }
         return (
           <div className={`col-md-${size}`} key={field.id}>
             <InputMask mask="999.999.999-99" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
-              {(inputProps) => <TextField {...inputProps} label={field.name} id={field.id} name={field.id} variant="outlined" error={hasInvalidChars} helperText={hasInvalidChars ? "CPF inválido" : ""} />}
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label={field.name}
+                  id={field.id}
+                  error={!!errorStates[field.id]}
+                  name={field.id}
+                  variant="outlined"
+                  helperText={!!errorStates[field.id] ? "CPF inválido" : ""}
+                  required
+                  InputProps={{
+                    ...inputProps.InputProps,
+                    inputProps: {
+                      ...inputProps.inputProps,
+                      "data-mask": "true",
+                    },
+                  }}
+                />
+              )}
             </InputMask>
           </div>
         );
       case "cep":
-        if (formValue.length > 0) {
-          var hasInvalidChars = formValue[field.id].includes("_");
-        }
         return (
           <div className={`col-md-${size}`} key={field.id}>
             <InputMask mask="99999-999" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
-              {(inputProps) => <TextField {...inputProps} label={field.name} id={field.id} name={field.id} variant="outlined" error={hasInvalidChars} helperText={hasInvalidChars ? "CEP inválido" : ""} />}
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label={field.name}
+                  id={field.id}
+                  name={field.id}
+                  variant="outlined"
+                  error={!!errorStates[field.id]}
+                  helperText={!!errorStates[field.id] ? "CEP inválido" : ""}
+                  required
+                  InputProps={{
+                    ...inputProps.InputProps,
+                    inputProps: {
+                      ...inputProps.inputProps,
+                      "data-mask": "true",
+                    },
+                  }}
+                />
+              )}
             </InputMask>
           </div>
         );
       case "data":
-        if (formValue.length > 0) {
-          var hasInvalidChars = formValue[field.id].includes("_");
-        }
         return (
           <div className={`col-md-${size}`} key={field.id}>
             <InputMask mask="99/99/9999" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
-              {(inputProps) => <TextField {...inputProps} label={field.name} id={field.id} name={field.id} variant="outlined" error={hasInvalidChars} helperText={hasInvalidChars ? "Data Inválida" : ""} />}
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label={field.name}
+                  id={field.id}
+                  error={!!errorStates[field.id]}
+                  name={field.id}
+                  variant="outlined"
+                  helperText={!!errorStates[field.id] ? "Data Inválida" : ""}
+                  required
+                  InputProps={{
+                    ...inputProps.InputProps,
+                    inputProps: {
+                      ...inputProps.inputProps,
+                      "data-mask": "true",
+                    },
+                  }}
+                />
+              )}
             </InputMask>
           </div>
         );
       case "phone":
-        if (formValue.length > 0) {
-          var hasInvalidChars = formValue[field.id].includes("_");
-        }
         return (
           <div className={`col-md-${size}`} key={field.id}>
-            <InputMask mask="99 (99) 99999-9999" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
-              {(inputProps) => <TextField {...inputProps} label={field.name} id={field.id} name={field.id} variant="outlined" error={hasInvalidChars} helperText={hasInvalidChars ? "Telefone Inválido" : ""} />}
+            <InputMask mask="55 (99) 99999-9999" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label={field.name}
+                  id={field.id}
+                  name={field.id}
+                  variant="outlined"
+                  error={!!errorStates[field.id]}
+                  helperText={!!errorStates[field.id] ? "Telefone Inválido" : ""}
+                  required
+                  InputProps={{
+                    ...inputProps.InputProps,
+                    inputProps: {
+                      ...inputProps.inputProps,
+                      "data-mask": "true",
+                    },
+                  }}
+                />
+              )}
             </InputMask>
           </div>
         );
       case "email":
-        const isInvalidEmail = !isValidEmail(formValue[field.id]);
         return (
           <div className={`col-md-${size}`} key={field.id}>
-            <TextField label={field.name} id={field.id} name={field.id} variant="outlined" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} error={isInvalidEmail} helperText={isInvalidEmail ? "E-mail inválido" : ""} />
+            <TextField label={field.name} id={field.id} name={field.id} onChange={handleChange} value={formValue[field.id]} onBlur={saveForm} variant="outlined" error={!!errorStates[field.id]} data-mask="true" helperText={!!errorStates[field.id] ? "Email Inválido" : ""} required />
           </div>
         );
 
       default:
         return (
           <div className={`col-md-${size}`} key={field.id}>
-            <TextField error={false} label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="outlined" />
+            <TextField error={false} label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="outlined" required />
           </div>
         );
     }

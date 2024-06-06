@@ -100,7 +100,22 @@ label {
 .MuiFormControl-root.MuiTextField-root.css-z3c6am-MuiFormControl-root-MuiTextField-root {
   width: 100%;
 }
+
+.react-kanban-column {
+  height: 100vh !important;
+}
+
+.card {
+  border-radius: 10px;
+  border: none;
+  padding: 20px;
+  max-width: 270px;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+td > p > td {
+  border: none !important;
 }

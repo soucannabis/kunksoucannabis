@@ -13,7 +13,7 @@ function Kanban() {
       const data = await apiRequest("/api/directus/reception", "", "GET");
       console.log(data);
 
-      const phases = ["Entrada", "1 Boas Vindas", "2 Saiba mais", "Despedida"];
+      const phases = ["Entrada", "1 Boas Vindas", "2 Saiba mais", "Despedida", "Contato por e-mail"];
       var arrayPhases = [];
       phases.map((phase, i) => {
         arrayPhases.push({
@@ -36,21 +36,18 @@ function Kanban() {
         });
       });
 
-      console.log(arrayPhases);
-
       setBoard({ columns: arrayPhases });
     }
     reception();
   }, []);
 
   function ControlledBoard() {
-    // You need to control the state yourself.
     const [controlledBoard, setBoard] = useState(board);
 
     async function handleCardMove(_card, source, destination) {
       const updatedBoard = moveCard(controlledBoard, source, destination);
       setBoard(updatedBoard);
-      await apiRequest("/api/directus/reception?id="+_card.id, {columnId:destination.toColumnId}, "POST");
+      await apiRequest("/api/directus/reception?id="+_card.id, {columnId:destination.toColumnId}, "PATCH");
     }
 
     return (

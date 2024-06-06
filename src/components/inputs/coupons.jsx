@@ -1,21 +1,34 @@
 import React, { useState, useEffect } from "react";
 import apiRequest from "../../modules/apiRequest";
-import { Modal, Button } from "react-bootstrap";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
-import Select from "react-select";
+import {
+  Box,
+  Button,
+  Tabs,
+  Tab,
+  Select,
+  MenuItem,
+  TextField,
+  Typography,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Form from "../forms/form";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function Coupon({ usersData }) {
-  const [showModal, setShowModal] = useState(false);
   const [coupons, setCoupons] = useState([]);
   const [selectData, setSelectData] = useState([]);
-  const [placeholderUser, setPlaceholderUser] = useState("Selecione um associado");
   const [couponType, setCouponType] = useState("money");
   const [formFields, setFormFields] = useState([]);
-
+  const [saveButton, setSaveButton] = useState(true);
   const [formData, setFormData] = useState({
     cod: null,
     use_limit: null,
@@ -60,11 +73,17 @@ function Coupon({ usersData }) {
     getCoupons();
   }, [usersData]);
 
-  const handleClose = () => setShowModal(false);
-  const handleShow = () => setShowModal(true);
-
   function returnDataForm(data) {
-    setFormData(data);
+    if (data && !data.setButton) {
+      console.log(data)
+      setFormData(data);
+    }
+
+    if (data.setButton) {
+      setSaveButton(false);
+    } else {
+      setSaveButton(true);
+    }
   }
 
   async function formSubmit() {
@@ -94,8 +113,8 @@ function Coupon({ usersData }) {
   }
 
   async function deleteCoupom(el) {
-    await apiRequest("/api/directus/coupons", { couponId: el.target.id }, "DELETE");
-    const id = parseInt(el.target.id);
+    await apiRequest("/api/directus/coupons", { couponId: el.currentTarget.id }, "DELETE");
+    const id = parseInt(el.currentTarget.id);
     const deleteItem = coupons.filter((item) => item.id !== id);
     setCoupons(deleteItem);
   }
@@ -103,71 +122,49 @@ function Coupon({ usersData }) {
   return (
     <div className="container">
       <ToastContainer />
-      <Modal show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title></Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Tabs defaultActiveKey="coupons" id="uncontrolled-tab-example" className="mb-3">
-            <Tab eventKey="coupons" title="Cupons">
-              <div className="row">
-                <div className="col-md-8">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Código</th>
-                        <th scope="col">Tipo</th>
-                        <th scope="col">Desconto</th>
-                        <th scope="col">Limite de Uso</th>
-                        <th scope="col">Associado</th>
-                        <th scope="col">Excluir</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {coupons
-                        .map((item) => {
-                          if (item.type === "money") {
-                            return { ...item, type: "Dinheiro" };
-                          } else if (item.type === "percentage") {
-                            return { ...item, type: "Porcentagem" };
-                          }
-                          return item;
-                        })
-                        .map((item, index) => (
-                          <tr key={index}>
-                            <td>{item.cod}</td>
-                            <td>{item.type}</td>
-                            <td>{item.type == "Dinheiro" ? "R$" + item.discount : item.discount + "%"}</td>
-                            <td>{item.use_limit}</td>
-                            <td>{item.name_user}</td>
-
-                            <td>
-                              <a style={{ cursor: "pointer", color: "red" }} id={item.id} onClick={deleteCoupom}>
-                                X
-                              </a>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="col-md-4">
-                  <Form formFields={formFields} returnDataForm={returnDataForm} full />
-                </div>
-              </div>
-            </Tab>
-          </Tabs>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={formSubmit} variant="primary">
+      <Box sx={{ padding: 4, backgroundColor: 'white', margin: 'auto', maxWidth: '100%', borderRadius: 2 }}>
+        <Typography variant="h6" gutterBottom>Cupons de Desconto</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+          <TableContainer component={Paper} sx={{ flex: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Código</TableCell>
+                  <TableCell>Tipo</TableCell>
+                  <TableCell>Desconto</TableCell>
+                  <TableCell>Limite de Uso</TableCell>
+                  <TableCell>Associado</TableCell>
+                  <TableCell>Excluir</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {coupons.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.cod}</TableCell>
+                    <TableCell>{item.type === "money" ? "Dinheiro" : "Porcentagem"}</TableCell>
+                    <TableCell>{item.type === "money" ? `R$${item.discount}` : `${item.discount}%`}</TableCell>
+                    <TableCell>{item.use_limit}</TableCell>
+                    <TableCell>{item.name_user}</TableCell>
+                    <TableCell>
+                      <IconButton id={item.id} onClick={deleteCoupom}>
+                        <DeleteIcon color="error" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box sx={{ flex: 1, marginLeft: 2 }}>
+            <Form formFields={formFields} returnDataForm={returnDataForm} full />
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button onClick={formSubmit} variant="contained" color="primary" disabled={saveButton}>
             Save Changes
           </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <a style={{ cursor: "pointer" }} variant="primary" onClick={handleShow}>
-        Cupons de Desconto
-      </a>
+        </Box>
+      </Box>
     </div>
   );
 }

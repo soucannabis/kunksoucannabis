@@ -52,7 +52,7 @@ function Dash() {
 
         switch (user.status) {
           case "formerror":
-            user.status = "Ainda não preencheu os dados";
+            user.status = "Problema ao preencher os dados";
             break;
           case "registered":
             user.status = "Apenas preencheu os dados";
@@ -61,10 +61,10 @@ function Dash() {
             user.status = "Ainda não preencheu os dados";
             break;
           case "signedcontract":
-            user.status = "Assinou o termo";
+            user.status = "Associado";
             break;
           case "aguardando-aprovacao":
-            user.status = "Aguardando Aprovação";
+            user.status = "Associado";
             break;
           default:
             break;
@@ -98,20 +98,10 @@ function Dash() {
   };
   
   return (
+    
     <div>
-      <Menu />
-      <div class="nav-scroller bg-white box-shadow">
-        <nav class="nav nav-underline">
-          <a class="nav-link active" href="#">
-          <Coupon usersData={usersData} />
-          </a>
-          <a class="nav-link active" href="#">
-          <Partners />
-          </a>
-        </nav>
-      </div>
       <div className="container main my-3 p-3 bg-white rounded box-shadow">        
-        <Table data={[{usersData:usersData, patientsData:patientsData}]} headers={["", "Nome", "Status", "E-mail", "Criado"]} fields={["fullname", "status", "email_account", "created"]} updateTable={updateTable} usersData={usersData} />
+        <Table data={[{usersData:usersData, patientsData:patientsData}]} headers={["Nome", "E-mail", "Telefone", "Status", "Criado"]} fields={["fullname", "email_account", "mobile_number", "status", "created"]} updateTable={updateTable} usersData={usersData} />
       </div>
     </div>
   );

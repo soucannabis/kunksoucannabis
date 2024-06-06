@@ -13,7 +13,7 @@ const CustomCard = ({ card }) => {
 
   return (
     <>
-      <div style={styles.card} onClick={openModal}>
+      <div  className="card" onClick={openModal}>
         <b>{card.title}</b>
         <p>{card.email}</p>
         <p>{card.phone}</p>
