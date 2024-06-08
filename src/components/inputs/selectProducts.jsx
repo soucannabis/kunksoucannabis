@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, TextField, Box, Typography } from "@mui/material";
 import apiRequest from "../../modules/apiRequest";
-import { Accordion } from "react-bootstrap";
+import Input from "@mui/joy/Input";
+import SearchIcon from "@mui/icons-material/Search";
 function SelectProducts({ selectedProducts, userProducts }) {
   if (!userProducts) {
     userProducts = [];
@@ -39,7 +41,7 @@ function SelectProducts({ selectedProducts, userProducts }) {
   }, []);
 
   useEffect(() => {
-    if (productsUser != [] && productsUser.length != 0) {
+    if (productsUser.length !== 0) {
       var products = productsUser;
 
       if (typeof products == "string") {
@@ -92,92 +94,65 @@ function SelectProducts({ selectedProducts, userProducts }) {
         }
       });
     } else {
-      var products = productsUser.filter((item) => item.product !== name);
+      var products = selectedProductsUser.filter((item) => item.product !== name);
       userProducts = productsUser.filter((item, index, self) => {
-        return index === self.findIndex((t) => t.product === item.product);
+        return index === self.findIndex((t) => t.product === name);
       });
 
       qntProduct.value = null;
-
-      setProductsUser(products);
+      setProductsUser(userProducts);
+      setSelectedProductsUser(products);
     }
   }
 
-  if (typeof userProducts == "string") {
-    userProducts = JSON.parse(userProducts);
-    var arrayProducts = productsUser.concat(selectedProductsUser);
-    selectedProducts(arrayProducts);
-  } else {
-    var arrayProducts = productsUser.concat(selectedProductsUser);
-    selectedProducts(arrayProducts);
-  }
+  useEffect(() => {
+    selectedProducts(productsUser.concat(selectedProductsUser));
+  }, [selectedProductsUser]);
 
   const filteredProducts = productsData.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.cod.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="container">
-      <div class="row">
-        <div class="col-md-6">
-          <Accordion defaultActiveKey="0">
-            {productCategories
-            .filter((element, index) => index < 5)
-            .map((item, i) => (
-              <Accordion.Item eventKey={i}>
-                <Accordion.Header>
-                  <div style={{ backgroundColor: item.rgb, padding: "5px 30px", marginRight: "10px", border: "1px solid " + item.rgb || "1px solid #000", color: item.rgb && "#fff" }}>{item.color}</div>
-                  {filteredProducts.filter((obj) => obj.cod && obj.cod.startsWith(item.cod)).length}
-                </Accordion.Header>
-                <Accordion.Body>
-                  {filteredProducts
-                    .filter((obj) => obj.cod && obj.cod.startsWith(item.cod))
-                    .map((item, index) => (
-                      <tr key={index}>
-                        <td>
-                          <input type="checkbox" value={item.cod} name={item.cod} id={"itemCheck-" + index} onClick={handleChangeProducts} />
-                          {item.cod} - {item.name}
-                        </td>
-                        <td>
-                          <input style={{ float: "right" }} type="number" name={"productValue-" + item.cod} onChange={handleChangeProducts} id={"productValue-" + index} min={1} max={10} />
-                        </td>
-                      </tr>
-                    ))}
-                </Accordion.Body>
-              </Accordion.Item>
-            ))}
-          </Accordion>
-        </div>
+    <Box sx={{ padding: 2 }}>
+      <Typography variant="h6" component="div" sx={{ marginBottom: 2 }}>
+        Selecione os Produtos
+      </Typography>
+      <Input type="text" placeholder="Pesquisar..." label="Pesquisar Produtos" variant="outlined" fullWidth margin="normal" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} startDecorator={<SearchIcon />} sx={{ marginBottom: "16px" }} />
 
-        <div class="col-md-6">
-          <Accordion defaultActiveKey="0">
-            {productCategories
-            .filter((element, index) => index >= 5)
-            .map((item, i) => (
-              <Accordion.Item eventKey={i}>
-                <Accordion.Header>
-                  <div style={{ backgroundColor: item.rgb, padding: "5px 30px", marginRight: "10px", border: "1px solid " + item.rgb || "1px solid #000", color: item.rgb && "#fff" }}>{item.color}</div>
-                  {filteredProducts.filter((obj) => obj.cod && obj.cod.startsWith(item.cod)).length}
-                </Accordion.Header>
-                <Accordion.Body>
-                  {filteredProducts
-                    .filter((obj) => obj.cod && obj.cod.startsWith(item.cod))
-                    .map((item, index) => (
-                      <tr key={index}>
-                        <td>
-                          <input type="checkbox" value={item.cod} name={item.cod} id={"itemCheck-" + index} onClick={handleChangeProducts} />
-                          {item.cod} - {item.name}
-                        </td>
-                        <td>
-                          <input style={{ float: "right" }} type="number" name={"productValue-" + item.cod} onChange={handleChangeProducts} id={"productValue-" + index} min={1} max={10} />
-                        </td>
-                      </tr>
-                    ))}
-                </Accordion.Body>
-              </Accordion.Item>
-            ))}
-          </Accordion>
-        </div>
-      </div>
-    </div>
+      <Table
+        aria-labelledby="tableTitle"
+        stickyHeader
+        sx={{
+          "--TableCell-headBackground": "var(--joy-palette-background-level1)",
+          "--Table-headerUnderlineThickness": "1px",
+          "--TableRow-hoverBackground": "var(--joy-palette-background-level1)",
+          "--TableCell-paddingY": "4px",
+          "--TableCell-paddingX": "8px",
+          padding: "0 120px",
+        }}
+      >
+        <TableHead>
+          <TableRow>
+            <TableCell>Produtos</TableCell>
+            <TableCell>Quantidade</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredProducts.map((product, index) => (
+            <TableRow key={index}>
+              <TableCell size="small">
+                <input type="checkbox" size="medium" value={product.cod} name={product.cod} id={"itemCheck-" + index} onClick={handleChangeProducts} />
+                <span style={{fontSize:"18px"}}>
+                  {product.cod} - {product.name}
+                </span>
+              </TableCell>
+              <TableCell size="small">
+                <TextField size="small" type="number" name={"productValue-" + product.cod} onChange={handleChangeProducts} id={"productValue-" + index} inputProps={{ min: 1, max: 10 }} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Box>
   );
 }
 

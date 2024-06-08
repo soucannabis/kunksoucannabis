@@ -119,3 +119,12 @@ label {
 td > p > td {
   border: none !important;
 }
+
+.formInput{
+  border-bottom:1px solid #000 !important
+}
+
+.formInput:active{
+  border-bottom:1px solid #0e1a81 !important
+}
+

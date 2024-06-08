@@ -11,10 +11,12 @@ import FormControl from "@mui/material/FormControl";
 import Textarea from "@mui/joy/Textarea";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Tooltip from "@mui/material/Tooltip";
+import Grid from "@mui/material/Grid";
+import Chip from '@mui/material/Chip';
 import apiRequest from "../../modules/apiRequest";
 import axios from "axios";
 
-function Form({ formData, returnDataForm, formFields, full, half, threecol, fourcol, updateTable, partnerEditForm, autoupload, pageform}) {
+function Form({ formData, returnDataForm, formFields, full, half, threecol, fourcol, updateTable, partnerEditForm, autoupload, pageform }) {
   const [formValue, setFormValue] = useState(formData || []);
   const [states, setStates] = useState([]);
   const [errorStates, setErrorStates] = useState({});
@@ -157,47 +159,40 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
     switch (field.type) {
       case "textarea":
         return (
-          <div style={{ marginTop: "40px" }} className={`col-md-${size}`} key={field.id}>
+          <Grid item xs={12} sx={{margin:"40px 0 20px 0"}}>
             <label htmlFor={field.id}>{field.name}:</label>
-            <Textarea size="lg" id={field.id} name={field.id} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} required />
-          </div>
+            <Textarea  className="formInput" size="sm" id={field.id} name={field.id} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} required />
+          </Grid>
         );
       case "ul":
-        return (
-          <div style={{ marginTop: "40px" }} className={`col-md-6`} key={field.id}>
-            <label htmlFor={field.id}>{field.name}:</label>
-            <ul style={{ listStyle: "none" }}>
+        return (        
+          <Grid item xs={12}>
+             <Grid> <label htmlFor={field.id}>{field.name}:</label></Grid>
               {field.options.map((option) => (
-                <div>
-                  <li style={{ marginTop: "5px" }} key={option.value} value={option.value}>
                     <Tooltip title={option.category}>
-                      <span style={{ cursor: "cell", padding: "5px", border: "1px solid #000", fontSize: "12px", margin: "10px" }}>{option.value}</span>
+                    <Chip color="primary" sx={{margin:"2px"}} label={option.value+" - "+option.label}/>
                     </Tooltip>
-                    {option.label}
-                  </li>
-                </div>
               ))}
-            </ul>
-          </div>
+          </Grid>
         );
       case "selectUser":
         return (
-          <div style={{ marginTop: "5px" }} className={`col-md-${size}`} key={field.id}>
+          <Grid item xs={size}>
             <SelectFind id={field.id} name={field.id} options={field.options} placeholder="Selecione um associado" onChange={handleChange} isSearchable required />
-          </div>
+          </Grid>
         );
       case "number":
         return (
-          <div style={{ marginTop: "5px" }} className={`col-md-${size}`} key={field.id}>
-            <TextField label={field.name} id={field.id} type="number" onChange={handleChange} variant="outlined" value="15" required />
-          </div>
+          <Grid item xs={size}>
+            <TextField  className="formInput" label={field.name} id={field.id} type="number" onChange={handleChange} variant="standard" value="15" required />
+          </Grid>
         );
       case "radio":
         return (
-          <div style={{ marginTop: "5px" }} className={`col-md-${size}`} key={field.id}>
+          <Grid item xs={size}>
             <FormControl>
               {field.name}
-              <RadioGroup aria-labelledby="demo-radio-buttons-group-label" name={field.id} onChange={handleChange} variant="outlined" required>
+              <RadioGroup aria-labelledby="demo-radio-buttons-group-label" name={field.id} onChange={handleChange} variant="standard" required>
                 {field.options.map((item, i) => {
                   return (
                     <div>
@@ -207,14 +202,14 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
                 })}
               </RadioGroup>
             </FormControl>
-          </div>
+          </Grid>
         );
       case "select":
         return (
-          <div style={{ marginTop: "5px" }}>
+          <Grid item xs={size}>
             <FormControl fullWidth>
               <InputLabel id={field.id}>{field.options.placeholder}</InputLabel>
-              <Select id={field.id} name={field.id} className={`col-md-${size}`} label={field.options.placeholder} onChange={handleChange}>
+              <Select id={field.id} name={field.id} className={`input-form`} label={field.options.placeholder} onChange={handleChange}>
                 {field.options.values.map((field, i) => {
                   return (
                     <MenuItem key={i} value={field.value}>
@@ -224,15 +219,15 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
                 })}
               </Select>
             </FormControl>
-          </div>
+          </Grid>
         );
 
       case "selectStates":
         return (
-          <div style={{ marginTop: "5px" }}>
+          <Grid item xs={size}>
             <FormControl fullWidth>
               <InputLabel id={field.id}>{field.options.placeholder}</InputLabel>
-              <Select id={field.id} name={field.id} className={`col-md-${size}`} label={field.options.placeholder} onChange={handleChange} required>
+              <Select id={field.id} name={field.id} className={`input-form`} label={field.options.placeholder} onChange={handleChange} required>
                 {states.map((field, i) => {
                   return (
                     <MenuItem key={i} value={field.value}>
@@ -242,15 +237,15 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
                 })}
               </Select>
             </FormControl>
-          </div>
+          </Grid>
         );
 
       case "selectCond":
         return (
-          <div style={{ marginTop: "5px" }}>
+          <Grid item xs={size}>
             <FormControl fullWidth>
               <InputLabel id={field.id}>{field.options.placeholder}</InputLabel>
-              <Select id={field.id} name={field.id} className={`col-md-${size}`} label={field.options.placeholder} onChange={handleChange}>
+              <Select id={field.id} name={field.id} className={`input-form`} label={field.options.placeholder} onChange={handleChange}>
                 {field.options.values.map((field, i) => {
                   return (
                     <MenuItem key={i} value={field.value}>
@@ -263,29 +258,29 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
             {field.fields
               .filter((item) => item.id === formValue.type)
               .map((field) => {
-                return <TextField label={field.name} id={field.id} name={field.elementName} onChange={handleChange} variant="outlined" required />;
+                return <TextField className="formInput"  label={field.name} id={field.id} name={field.elementName} onChange={handleChange} variant="standard" required />;
               })}
-          </div>
+          </Grid>
         );
 
       case "conditional":
         return (
-          <div className={`col-md-${size}`} key={field.id}>
-            <TextField label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="outlined" hidden={field.options.hidden} required />
-          </div>
+          <Grid item xs={size}>
+            <TextField  className="formInput" label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="standard" hidden={field.options.hidden} required />
+          </Grid>
         );
       case "cpf":
         return (
-          <div className={`col-md-${size}`} key={field.id}>
+          <Grid item xs={size}>
             <InputMask mask="999.999.999-99" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
               {(inputProps) => (
-                <TextField
+                <TextField className="formInput" 
                   {...inputProps}
                   label={field.name}
                   id={field.id}
                   error={!!errorStates[field.id]}
                   name={field.id}
-                  variant="outlined"
+                  variant="standard"
                   helperText={!!errorStates[field.id] ? "CPF inválido" : ""}
                   required
                   InputProps={{
@@ -298,19 +293,19 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
                 />
               )}
             </InputMask>
-          </div>
+          </Grid>
         );
       case "cep":
         return (
-          <div className={`col-md-${size}`} key={field.id}>
+          <Grid item xs={size}>
             <InputMask mask="99999-999" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
               {(inputProps) => (
-                <TextField
+                <TextField className="formInput" 
                   {...inputProps}
                   label={field.name}
                   id={field.id}
                   name={field.id}
-                  variant="outlined"
+                  variant="standard"
                   error={!!errorStates[field.id]}
                   helperText={!!errorStates[field.id] ? "CEP inválido" : ""}
                   required
@@ -324,20 +319,20 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
                 />
               )}
             </InputMask>
-          </div>
+          </Grid>
         );
       case "data":
         return (
-          <div className={`col-md-${size}`} key={field.id}>
+          <Grid item xs={size}>
             <InputMask mask="99/99/9999" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
               {(inputProps) => (
-                <TextField
+                <TextField className="formInput" 
                   {...inputProps}
                   label={field.name}
                   id={field.id}
                   error={!!errorStates[field.id]}
                   name={field.id}
-                  variant="outlined"
+                  variant="standard"
                   helperText={!!errorStates[field.id] ? "Data Inválida" : ""}
                   required
                   InputProps={{
@@ -350,19 +345,19 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
                 />
               )}
             </InputMask>
-          </div>
+          </Grid>
         );
       case "phone":
         return (
-          <div className={`col-md-${size}`} key={field.id}>
+          <Grid item xs={size}>
             <InputMask mask="55 (99) 99999-9999" value={formValue[field.id]} onChange={handleChange} onBlur={saveForm}>
               {(inputProps) => (
-                <TextField
+                <TextField className="formInput" 
                   {...inputProps}
                   label={field.name}
                   id={field.id}
                   name={field.id}
-                  variant="outlined"
+                  variant="standard"
                   error={!!errorStates[field.id]}
                   helperText={!!errorStates[field.id] ? "Telefone Inválido" : ""}
                   required
@@ -376,28 +371,30 @@ function Form({ formData, returnDataForm, formFields, full, half, threecol, four
                 />
               )}
             </InputMask>
-          </div>
+          </Grid>
         );
       case "email":
         return (
-          <div className={`col-md-${size}`} key={field.id}>
-            <TextField label={field.name} id={field.id} name={field.id} onChange={handleChange} value={formValue[field.id]} onBlur={saveForm} variant="outlined" error={!!errorStates[field.id]} data-mask="true" helperText={!!errorStates[field.id] ? "Email Inválido" : ""} required />
-          </div>
+          <Grid item xs={size}>
+            <TextField  className="formInput"  label={field.name} id={field.id} name={field.id} onChange={handleChange} value={formValue[field.id]} onBlur={saveForm} variant="standard" error={!!errorStates[field.id]} data-mask="true" helperText={!!errorStates[field.id] ? "Email Inválido" : ""} required />
+          </Grid>
         );
 
       default:
         return (
-          <div className={`col-md-${size}`} key={field.id}>
-            <TextField error={false} label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="outlined" required />
-          </div>
+          <Grid item xs={size}>
+            <TextField className="formInput" error={false} label={field.name} id={field.id} name={field.id} defaultValue={formValue[field.id]} value={formValue[field.id]} onChange={handleChange} onBlur={saveForm} variant="standard" required />
+          </Grid>
         );
     }
   }
 
   return (
-    <form>
-      <div className="row">{formFields.map((field) => renderFormField(field, formValue, handleChange))}</div>
-    </form>
+      <form>
+        <Grid container spacing={1}>
+          {formFields.map((field) => renderFormField(field, formValue, handleChange))}
+        </Grid>
+      </form>
   );
 }
 
